@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BMI Calculator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 40px 16px; }
+    .card { background: #fff; border-radius: 16px; padding: 2rem; max-width: 480px; width: 100%; box-shadow: 0 2px 16px rgba(0,0,0,0.08); }
+    h1 { font-size: 22px; font-weight: 600; margin-bottom: 1.5rem; color: #111; }
+    .unit-toggle { display: flex; gap: 8px; margin-bottom: 1.5rem; }
+    .unit-btn { padding: 7px 22px; border-radius: 8px; border: 1px solid #ddd; background: transparent; color: #666; cursor: pointer; font-size: 14px; transition: all 0.15s; }
+    .unit-btn.active { background: #f0f0f0; color: #111; border-color: #bbb; font-weight: 500; }
+    .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
+    .input-box { border: 1px solid #e5e5e5; border-radius: 10px; padding: 12px 14px; }
+    .input-label { font-size: 12px; color: #888; margin-bottom: 6px; }
+    .input-row { display: flex; align-items: center; gap: 6px; }
+    .input-row input { flex: 1; border: none; background: transparent; font-size: 20px; font-weight: 500; color: #111; outline: none; width: 100%; }
+    .input-unit { font-size: 13px; color: #aaa; }
+    .result-card { border-radius: 12px; border: 1px solid #e5e5e5; padding: 1.25rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 1.25rem; }
+    .bmi-number { font-size: 48px; font-weight: 600; min-width: 100px; color: #ccc; }
+    .bmi-label { font-size: 18px; font-weight: 500; color: #888; }
+    .bmi-sub { font-size: 13px; color: #aaa; margin-top: 4px; }
+    .bar-track { height: 10px; border-radius: 99px; background: linear-gradient(to right, #1D9E75 0%, #639922 20%, #EF9F27 40%, #E24B4A 65%, #A32D2D 100%); margin: 1rem 0 0.5rem; position: relative; }
+    .bar-needle { position: absolute; top: -5px; width: 4px; height: 20px; background: #111; border-radius: 99px; transform: translateX(-50%); transition: left 0.4s ease; opacity: 0; }
+    .bar-labels { display: flex; justify-content: space-between; font-size: 11px; color: #999; }
+    .ranges { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 1.25rem; }
+    .range-cell { background: #f8f8f8; border-radius: 8px; padding: 10px 10px 8px; }
+    .range-dot { width: 8px; height: 8px; border-radius: 50%; margin-bottom: 5px; }
+    .range-name { font-size: 11px; color: #888; }
+    .range-val { font-size: 12px; font-weight: 500; color: #333; margin-top: 2px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>BMI Calculator</h1>
+
+    <div class="unit-toggle">
+      <button class="unit-btn active" onclick="setUnit('metric', this)">Metric</button>
+      <button class="unit-btn" onclick="setUnit('imperial', this)">Imperial</button>
+    </div>
+
+    <div class="input-grid">
+      <div class="input-box">
+        <div class="input-label">Height</div>
+        <div class="input-row">
+          <input type="number" id="height" placeholder="170" min="1" oninput="calc()" />
+          <span class="input-unit" id="h-unit">cm</span>
+        </div>
+      </div>
+      <div class="input-box">
+        <div class="input-label">Weight</div>
+        <div class="input-row">
+          <input type="number" id="weight" placeholder="70" min="1" oninput="calc()" />
+          <span class="input-unit" id="w-unit">kg</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-card">
+      <div class="bmi-number" id="bmi-num">—</div>
+      <div>
+        <div class="bmi-label" id="bmi-label">Enter your details</div>
+        <div class="bmi-sub" id="bmi-sub">Height and weight required</div>
+      </div>
+    </div>
+
+    <div class="bar-track">
+      <div class="bar-needle" id="needle"></div>
+    </div>
+    <div class="bar-labels">
+      <span>Underweight</span><span>Normal</span><span>Overweight</span><span>Obese</span>
+    </div>
+
+    <div class="ranges">
+      <div class="range-cell">
+        <div class="range-dot" style="background:#1D9E75;"></div>
+        <div class="range-name">Underweight</div>
+        <div class="range-val">&lt; 18.5</div>
+      </div>
+      <div class="range-cell">
+        <div class="range-dot" style="background:#639922;"></div>
+        <div class="range-name">Normal</div>
+        <div class="range-val">18.5 – 24.9</div>
+      </div>
+      <div class="range-cell">
+        <div class="range-dot" style="background:#BA7517;"></div>
+        <div class="range-name">Overweight</div>
+        <div class="range-val">25 – 29.9</div>
+      </div>
+      <div class="range-cell">
+        <div class="range-dot" style="background:#A32D2D;"></div>
+        <div class="range-name">Obese</div>
+        <div class="range-val">&ge; 30</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let unit = 'metric';
+
+    function setUnit(u, btn) {
+      unit = u;
+      document.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('h-unit').textContent = u === 'metric' ? 'cm' : 'in';
+      document.getElementById('w-unit').textContent = u === 'metric' ? 'kg' : 'lbs';
+      document.getElementById('height').placeholder = u === 'metric' ? '170' : '67';
+      document.getElementById('weight').placeholder = u === 'metric' ? '70' : '154';
+      document.getElementById('height').value = '';
+      document.getElementById('weight').value = '';
+      reset();
+    }
+
+    function reset() {
+      document.getElementById('bmi-num').textContent = '—';
+      document.getElementById('bmi-num').style.color = '#ccc';
+      document.getElementById('bmi-label').textContent = 'Enter your details';
+      document.getElementById('bmi-label').style.color = '#888';
+      document.getElementById('bmi-sub').textContent = 'Height and weight required';
+      document.getElementById('needle').style.opacity = '0';
+    }
+
+    function calc() {
+      let h = parseFloat(document.getElementById('height').value);
+      let w = parseFloat(document.getElementById('weight').value);
+      if (!h || !w || h <= 0 || w <= 0) { reset(); return; }
+
+      let bmi;
+      if (unit === 'metric') {
+        let hm = h / 100;
+        bmi = w / (hm * hm);
+      } else {
+        bmi = (703 * w) / (h * h);
+      }
+      bmi = Math.round(bmi * 10) / 10;
+
+      let label, color, sub, pct;
+      if (bmi < 18.5) {
+        label = 'Underweight'; color = '#1D9E75'; sub = 'Consider consulting a nutritionist.';
+        pct = (bmi / 18.5) * 18;
+      } else if (bmi < 25) {
+        label = 'Normal weight'; color = '#639922'; sub = 'You are in a healthy weight range.';
+        pct = 18 + ((bmi - 18.5) / 6.5) * 22;
+      } else if (bmi < 30) {
+        label = 'Overweight'; color = '#BA7517'; sub = 'A balanced diet and exercise may help.';
+        pct = 40 + ((bmi - 25) / 5) * 25;
+      } else {
+        label = 'Obese'; color = '#A32D2D'; sub = 'Please consult a healthcare professional.';
+        pct = 65 + Math.min(((bmi - 30) / 10) * 30, 32);
+      }
+
+      document.getElementById('bmi-num').textContent = bmi.toFixed(1);
+      document.getElementById('bmi-num').style.color = color;
+      document.getElementById('bmi-label').textContent = label;
+      document.getElementById('bmi-label').style.color = color;
+      document.getElementById('bmi-sub').textContent = sub;
+
+      const needle = document.getElementById('needle');
+      needle.style.left = Math.min(Math.max(pct, 1), 98) + '%';
+      needle.style.opacity = '1';
+    }
+  </script>
+</body>
+</html>
